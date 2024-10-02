@@ -3,7 +3,6 @@
 
 from __future__ import unicode_literals
 
-import sys
 import os
 import io
 from setuptools import setup, find_packages
@@ -18,11 +17,6 @@ VERSION = __import__('spirit').__version__
 
 with io.open(os.path.join(BASE_DIR, 'requirements.txt'), encoding='utf-8') as fh:
     REQUIREMENTS = fh.read()
-
-if sys.platform.startswith(('win32', 'darwin')):
-    PYTHON_MAGIC_DEP = ['python-magic-bin==0.4.14']
-else:  # Linux?
-    PYTHON_MAGIC_DEP = ['python-magic==0.4.27']
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
@@ -46,7 +40,12 @@ spirit=spirit.extra.bin.spirit:main
     zip_safe=False,
     install_requires=REQUIREMENTS,
     extras_require={
-        'files': PYTHON_MAGIC_DEP,
+        'files': [
+            # the two requirements below simplify to the single requirement "python-magic==0.4.28" when cross-platform python-magic gets released: https://github.com/ahupp/python-magic/pull/294
+            "python-magic-bin~=0.4.14 ; sys_platform == 'win32'",
+            # for python-magic to work, either install libmagic on your system or install cross-platform python-magic (containing pre-compiled libmagic) by running 'pip install python-magic==0.4.28 --find-links=https://github.com/ddelange/python-magic/releases/expanded_assets/0.4.28.post7'
+            "python-magic~=0.4.27 ; sys_platform != 'win32'",
+        ],
         'huey': 'huey == 2.4.5',
         'celery': 'celery[redis] == 4.4.7'},
     license='MIT License',
